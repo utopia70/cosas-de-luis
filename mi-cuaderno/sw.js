@@ -1,4 +1,4 @@
-const CACHE='mi-cuaderno-v6-diario';
+const CACHE='mi-cuaderno-v7-estilo-suave';
 const ASSETS=['./','./index.html','./style.css','./app.js','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('mi-cuaderno-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));});
