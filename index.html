@@ -1,0 +1,835 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Cosas de Luis</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cosas de Luis">
+<meta name="theme-color" content="#15181c">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #EEF0ED;
+    --surface: #FFFFFF;
+    --surface-2: #E4E7E2;
+    --text: #1B2024;
+    --text-dim: #5E6B64;
+    --border: #D7DBD4;
+    --accent: #3E6259;
+    --accent-ink: #FFFFFF;
+    --danger: #C9493A;
+
+    --cat-recordatorio: #D85C4A;
+    --cat-tarea: #3D6FB4;
+    --cat-idea: #B6811A;
+    --cat-nota: #4C8065;
+    --cat-ink: #FFFFFF;
+
+    --radius: 16px;
+    --font-display: "Newsreader", Georgia, "Times New Roman", serif;
+    --font-body: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg: #15181C;
+      --surface: #1E2227;
+      --surface-2: #262B31;
+      --text: #ECEAE2;
+      --text-dim: #9AA3A0;
+      --border: #333942;
+      --accent: #5FA596;
+      --accent-ink: #0F1512;
+
+      --cat-recordatorio: #E8776A;
+      --cat-tarea: #6FA0E0;
+      --cat-idea: #E0A83E;
+      --cat-nota: #74A98A;
+      --cat-ink: #15181C;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg: #15181C;
+    --surface: #1E2227;
+    --surface-2: #262B31;
+    --text: #ECEAE2;
+    --text-dim: #9AA3A0;
+    --border: #333942;
+    --accent: #5FA596;
+    --accent-ink: #0F1512;
+
+    --cat-recordatorio: #E8776A;
+    --cat-tarea: #6FA0E0;
+    --cat-idea: #E0A83E;
+    --cat-nota: #74A98A;
+    --cat-ink: #15181C;
+  }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{margin:0; padding:0; background:var(--bg); color:var(--text); font-family:var(--font-body); height:100%; overflow-x:hidden;}
+  body{
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    display:flex; flex-direction:column; height:100vh;
+  }
+  h1,h2{ font-family:var(--font-display); text-wrap:balance; }
+
+  header{ padding: 20px 20px 8px; flex-shrink:0; }
+  header h1{ margin:0; font-size:28px; font-weight:600; letter-spacing:-0.2px; }
+
+  .search-wrap{ position:relative; margin:6px 16px 0; display:flex; align-items:center; flex-shrink:0; }
+  .search-wrap .search-icon{ position:absolute; left:14px; font-size:14px; color:var(--text-dim); pointer-events:none; }
+  .search-wrap input[type="search"]{
+    width:100%; padding:11px 38px 11px 36px; border-radius:999px; border:1.5px solid var(--border);
+    background:var(--surface); color:var(--text); font-size:14.5px; font-family:var(--font-body);
+    -webkit-appearance:none; appearance:none;
+  }
+  .search-wrap input[type="search"]::-webkit-search-cancel-button{ display:none; }
+  .search-wrap input[type="search"]:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .search-clear{
+    position:absolute; right:8px; background:none; border:none; color:var(--text-dim); font-size:13px; padding:6px; cursor:pointer;
+  }
+
+  .filters{
+    display:flex; gap:8px; padding:10px 16px 6px; overflow-x:auto; flex-shrink:0;
+    -webkit-overflow-scrolling:touch; scrollbar-width:none;
+  }
+  .filters::-webkit-scrollbar{display:none;}
+  .chip{
+    flex-shrink:0; padding:7px 15px; border-radius:999px; background:var(--surface);
+    color:var(--text-dim); font-size:13.5px; font-weight:500; border:1.5px solid var(--border);
+    white-space:nowrap; cursor:pointer; user-select:none; transition:transform .15s, background .15s, color .15s;
+    font-variant-numeric: tabular-nums;
+  }
+  .chip.active{ color:var(--cat-ink); border-color:transparent; font-weight:600; }
+  .chip:active{ transform:scale(0.95); }
+
+  main{ flex:1; overflow-y:auto; padding: 10px 14px 150px; -webkit-overflow-scrolling:touch; }
+  .empty{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    height:55%; color:var(--text-dim); text-align:center; gap:10px; padding:0 30px;
+  }
+  .empty .big{font-size:40px;}
+  .empty p{ max-width:28ch; line-height:1.4; }
+
+  .grid{ display:flex; flex-direction:column; gap:10px; }
+  @media (min-width: 700px){ .grid{ display:grid; grid-template-columns: repeat(3,1fr); } }
+
+  .card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px;
+    position:relative; border-left: 4px solid var(--card-color, var(--accent));
+    display:flex; flex-direction:column; gap:6px;
+    animation: pop .2s ease;
+  }
+  @media (prefers-reduced-motion: reduce){ .card{ animation:none; } }
+  @keyframes pop{ from{ opacity:0; transform:scale(.96); } to{ opacity:1; transform:scale(1); } }
+
+  .card .row-top{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .card .row-left{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; min-width:0; }
+  .card .badge{
+    font-size:10.5px; font-weight:600; padding:3px 9px; flex-shrink:0;
+    border-radius:999px; background:var(--card-color, var(--accent)); color:var(--cat-ink);
+    text-transform:uppercase; letter-spacing:.5px; font-family:var(--font-mono);
+  }
+  .card .when{
+    font-size:11px; font-weight:600; padding:3px 8px; border-radius:999px; flex-shrink:0;
+    background:var(--surface-2); color:var(--text); font-family:var(--font-mono);
+    font-variant-numeric: tabular-nums; display:inline-flex; align-items:center; gap:3px;
+  }
+  .card .when.overdue{ background:var(--danger); color:#fff; }
+  .card .text{ font-size:14.5px; line-height:1.4; white-space:pre-wrap; word-break:break-word; }
+  .card .card-img{ width:100%; max-height:160px; object-fit:cover; border-radius:10px; display:block; }
+  .card .card-doc{ background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:12.5px; font-family:var(--font-mono); }
+  .card .card-link{ background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:12.5px; font-family:var(--font-mono); color:var(--accent); display:block; text-decoration:none; word-break:break-all; }
+  .card .meta{ font-size:11px; color:var(--text-dim); font-family:var(--font-mono); font-variant-numeric: tabular-nums; }
+  .card .actions{ display:flex; gap:12px; flex-shrink:0; }
+  .card .icon-btn{ background:none; border:none; color:var(--text-dim); font-size:15px; padding:2px; cursor:pointer; }
+  .card .icon-btn:active{ color:var(--text); }
+
+  .fab-wrap{
+    position:fixed; bottom:0; left:0; right:0; display:flex; justify-content:center;
+    padding-bottom: calc(22px + env(safe-area-inset-bottom)); pointer-events:none;
+  }
+  .fab-row{ display:flex; align-items:center; gap:18px; pointer-events:auto; }
+  .fab-add{
+    width:64px; height:64px; border-radius:50%; background:var(--accent); color:var(--accent-ink);
+    border:none; font-size:32px; line-height:1; display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 6px 20px rgba(0,0,0,.25); transition: transform .15s;
+  }
+  .fab-add:active{ transform:scale(0.92); }
+
+  .chooser-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin:16px 0 4px; }
+  .chooser-item{
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; width:100%; text-align:center;
+    background:var(--surface-2); border:1px solid var(--border); border-top:4px solid var(--card-color, var(--accent));
+    border-radius:14px; padding:20px 10px; font-size:14.5px; font-weight:600; color:var(--text);
+    font-family:var(--font-body); cursor:pointer;
+  }
+  .chooser-item:active{ transform:scale(0.97); }
+  .chooser-emoji{ font-size:26px; }
+
+  .sheet-header-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:4px; }
+  .sheet-header-row h2{ margin:0; font-size:20px; font-weight:600; }
+  .sheet-header-actions{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
+  .mic-inline, .attach-inline{
+    width:44px; height:44px; border-radius:50%;
+    border:none; font-size:18px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition: transform .15s, background .2s;
+  }
+  .mic-inline{ background:var(--accent); color:var(--accent-ink); }
+  .attach-inline{ background:var(--surface-2); color:var(--text); border:1.5px solid var(--border); }
+  .mic-inline.listening{ background:var(--danger); color:#fff; }
+  .mic-inline:active, .attach-inline:active{ transform:scale(0.92); }
+
+  .attachment-preview{ position:relative; margin-top:10px; }
+  .attachment-preview img{ max-width:100%; max-height:180px; border-radius:12px; display:block; border:1px solid var(--border); object-fit:cover; }
+  .attach-doc, .attach-link{
+    background:var(--surface-2); border:1px solid var(--border); border-radius:12px; padding:10px 40px 10px 12px;
+    font-size:13.5px; font-family:var(--font-mono); word-break:break-all;
+  }
+  .attach-link{ color:var(--accent); }
+  .attach-remove{
+    position:absolute; top:8px; right:8px; width:26px; height:26px; border-radius:50%;
+    background:rgba(0,0,0,.55); color:#fff; border:none; font-size:12px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  .wave{ display:flex; align-items:center; gap:3px; height:20px; }
+  .wave span{ width:3px; border-radius:2px; background:currentColor; height:5px; display:block; }
+  .mic-inline.listening .wave span{ animation: wavebar 0.9s ease-in-out infinite; }
+  .mic-inline.listening .wave span:nth-child(1){ animation-delay:0s; }
+  .mic-inline.listening .wave span:nth-child(2){ animation-delay:.12s; }
+  .mic-inline.listening .wave span:nth-child(3){ animation-delay:.24s; }
+  .mic-inline.listening .wave span:nth-child(4){ animation-delay:.36s; }
+  .mic-inline.listening .wave span:nth-child(5){ animation-delay:.48s; }
+  @keyframes wavebar{ 0%,100%{ height:5px; } 50%{ height:18px; } }
+  @media (prefers-reduced-motion: reduce){ .mic-inline.listening .wave span{ animation:none; height:14px; } }
+
+  .sheet-backdrop{
+    position:fixed; inset:0; background:rgba(0,0,0,.45); display:flex; align-items:flex-end;
+    opacity:0; pointer-events:none; transition:opacity .2s; z-index:50;
+  }
+  .sheet-backdrop.open{ opacity:1; pointer-events:auto; }
+  .sheet{
+    background:var(--surface); width:100%; border-radius:24px 24px 0 0; padding:22px 20px calc(20px + env(safe-area-inset-bottom));
+    transform:translateY(100%); transition:transform .25s ease; max-height:85vh; overflow-y:auto;
+    border-top:1px solid var(--border);
+  }
+  .sheet-backdrop.open .sheet{ transform:translateY(0); }
+  .sheet h2{ margin:0 0 4px; font-size:20px; font-weight:600; }
+  .sheet .status{ color:var(--text-dim); font-size:13px; margin-bottom:14px; font-family:var(--font-mono); }
+  .sheet textarea{
+    width:100%; min-height:90px; background:var(--surface-2); color:var(--text); border:1px solid var(--border);
+    border-radius:14px; padding:14px; font-size:15px; resize:vertical; font-family:var(--font-body);
+  }
+  .sheet textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .cat-picker{ display:flex; gap:8px; margin:14px 0; flex-wrap:wrap; }
+  .cat-pick{
+    padding:7px 14px; border-radius:999px; font-size:13px; font-weight:600; cursor:pointer;
+    background:var(--surface-2); color:var(--text-dim); border:1.5px solid var(--border);
+  }
+  .cat-pick.active{ color:var(--cat-ink); border-color:transparent; }
+
+  .reminder-fields{ margin-top:4px; padding-top:10px; border-top:1px dashed var(--border); }
+  .field-label{ display:block; font-size:12px; font-weight:600; color:var(--text-dim); text-transform:uppercase; letter-spacing:.4px; margin-bottom:6px; }
+  .reminder-fields input[type="datetime-local"]{
+    width:100%; background:var(--surface-2); color:var(--text); border:1px solid var(--border);
+    border-radius:12px; padding:11px 12px; font-size:15px; font-family:var(--font-mono);
+  }
+  .alarm-row{ display:flex; align-items:flex-start; gap:10px; margin-top:12px; cursor:pointer; }
+  .alarm-row input[type="checkbox"]{ width:19px; height:19px; margin-top:2px; accent-color:var(--accent); flex-shrink:0; }
+  .alarm-row .alarm-text{ font-size:14px; font-weight:500; }
+  .alarm-caveat{ font-size:12px; color:var(--text-dim); margin:4px 0 0 29px; line-height:1.4; }
+
+  .sheet-actions{ display:flex; gap:10px; margin-top:16px; }
+  .btn{ flex:1; padding:14px; border-radius:14px; border:none; font-size:15px; font-weight:600; cursor:pointer; font-family:var(--font-body); }
+  .btn:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .btn.primary{ background:var(--accent); color:var(--accent-ink); }
+  .btn.ghost{ background:var(--surface-2); color:var(--text); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Cosas de Luis</h1>
+</header>
+
+<div class="search-wrap">
+  <span class="search-icon">🔍</span>
+  <input type="search" id="searchInput" placeholder="Buscar en tus notas…" autocomplete="off" autocorrect="off" spellcheck="false">
+  <button class="search-clear" id="searchClear" hidden aria-label="Borrar búsqueda">✕</button>
+</div>
+
+<div class="filters" id="filters"></div>
+
+<main id="main">
+  <div class="grid" id="grid"></div>
+</main>
+
+<div class="fab-wrap">
+  <div class="fab-row">
+    <button class="fab-add" id="btnAdd" title="Añadir" aria-label="Añadir">+</button>
+  </div>
+</div>
+
+<div class="sheet-backdrop" id="chooserBackdrop">
+  <div class="sheet">
+    <h2>¿Qué quieres añadir?</h2>
+    <div class="chooser-grid" id="chooserGrid"></div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="btnChooserCancel">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet-backdrop" id="backdrop">
+  <div class="sheet">
+    <div class="sheet-header-row">
+      <h2 id="sheetTitle">Nueva nota</h2>
+      <div class="sheet-header-actions">
+        <button class="attach-inline" id="btnAttach" title="Adjuntar" aria-label="Adjuntar">📎</button>
+        <button class="mic-inline" id="btnMicInline" title="Dictar" aria-label="Dictar">
+          <span id="micGlyph">🎤</span>
+          <span class="wave" id="micWave" hidden><span></span><span></span><span></span><span></span><span></span></span>
+        </button>
+      </div>
+    </div>
+    <div class="status" id="status">Toca el micrófono y habla…</div>
+    <textarea id="draftText" placeholder="Escribe o dicta aquí tu nota…"></textarea>
+    <div class="attachment-preview" id="attachmentPreview" hidden></div>
+    <div class="cat-picker" id="catPicker"></div>
+
+    <div class="reminder-fields" id="reminderFields" hidden>
+      <span class="field-label">¿Cuándo?</span>
+      <input type="datetime-local" id="draftTime">
+      <label class="alarm-row" for="draftAlarm">
+        <input type="checkbox" id="draftAlarm">
+        <span>
+          <span class="alarm-text">🔔 Avisarme con una notificación</span>
+          <div class="alarm-caveat">Funciona mientras tengas la app abierta o reciente en el multitarea. iOS no garantiza avisos si la cierras del todo — si la pasas, la verás marcada como vencida al volver a abrir.</div>
+        </span>
+      </label>
+    </div>
+
+    <div class="sheet-actions">
+      <button class="btn ghost" id="btnCancel">Cancelar</button>
+      <button class="btn primary" id="btnSave">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet-backdrop" id="attachBackdrop" style="z-index:60;">
+  <div class="sheet">
+    <h2>Adjuntar</h2>
+    <div class="chooser-grid">
+      <button type="button" class="chooser-item" id="tileCamera" style="--card-color:var(--accent)"><span class="chooser-emoji">📷</span><span>Foto</span></button>
+      <button type="button" class="chooser-item" id="tileImage" style="--card-color:var(--accent)"><span class="chooser-emoji">🖼️</span><span>Imagen</span></button>
+      <button type="button" class="chooser-item" id="tileDoc" style="--card-color:var(--accent)"><span class="chooser-emoji">📄</span><span>Documento</span></button>
+      <button type="button" class="chooser-item" id="tileLink" style="--card-color:var(--accent)"><span class="chooser-emoji">🔗</span><span>Enlace</span></button>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="btnAttachCancel">Cancelar</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="fileCamera" accept="image/*" capture="environment" hidden>
+<input type="file" id="fileImage" accept="image/*" hidden>
+<input type="file" id="fileDoc" accept=".pdf,.doc,.docx,.txt,.rtf,.csv,.xlsx,.xls,.ppt,.pptx,application/pdf" hidden>
+
+<script>
+const CATEGORIES = {
+  recordatorio: { label: "Recordatorio", varName: "--cat-recordatorio", emoji: "⏰", newTitle: "Nuevo recordatorio", editTitle: "Editar recordatorio" },
+  tarea:        { label: "Tarea",        varName: "--cat-tarea",        emoji: "✅", newTitle: "Nueva tarea",        editTitle: "Editar tarea" },
+  idea:         { label: "Idea",         varName: "--cat-idea",         emoji: "💡", newTitle: "Nueva idea",         editTitle: "Editar idea" },
+  nota:         { label: "Nota",         varName: "--cat-nota",         emoji: "📝", newTitle: "Nueva nota",         editTitle: "Editar nota" },
+};
+const CAT_ORDER = ["recordatorio","tarea","idea","nota"];
+
+function guessDateTime(text){
+  const t = text.toLowerCase();
+  const now = new Date();
+  const d = new Date(now);
+  let hasDay = false;
+
+  if (/\bmañana\b/.test(t)){ d.setDate(d.getDate()+1); hasDay = true; }
+
+  const weekdayIdx = { "domingo":0, "lunes":1, "martes":2, "miércoles":3, "miercoles":3, "jueves":4, "viernes":5, "sábado":6, "sabado":6 };
+  for (const name in weekdayIdx){
+    if (t.includes(name)){
+      const target = weekdayIdx[name];
+      let diff = (target - d.getDay() + 7) % 7;
+      if (diff === 0) diff = 7;
+      d.setDate(d.getDate() + diff);
+      hasDay = true;
+      break;
+    }
+  }
+
+  const hourMatch = t.match(/a las (\d{1,2})(?::(\d{2}))?/);
+  if (hourMatch){
+    d.setHours(parseInt(hourMatch[1],10), hourMatch[2] ? parseInt(hourMatch[2],10) : 0, 0, 0);
+    return d;
+  }
+  if (hasDay){
+    d.setHours(9,0,0,0);
+    return d;
+  }
+  return null;
+}
+
+function toLocalInputValue(d){
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+const STORAGE_KEY = "notas-habladas-v2";
+let notes = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+if (notes === null){
+  notes = [{
+    id: "onboarding-1",
+    text: "👋 Esta es una nota de ejemplo. Bórrala cuando quieras y empieza a grabar las tuyas tocando el micrófono de abajo.",
+    category: "idea",
+    ts: Date.now()
+  }];
+}
+let activeFilter = "todas";
+let searchQuery = "";
+let draftCategory = "nota";
+let draftAttachment = null;
+let editingId = null;
+let draftTimeTouched = false;
+
+const DIACRITICS_RX = new RegExp('[' + String.fromCharCode(0x0300) + '-' + String.fromCharCode(0x036f) + ']', 'g');
+const normalize = s => s.toLowerCase().normalize('NFD').replace(DIACRITICS_RX, '');
+const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(notes)); }
+
+function fmtTime(ts){
+  const d = new Date(ts);
+  const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  const time = d.toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit' });
+  if (sameDay) return "hoy " + time;
+  return d.toLocaleDateString('es-ES', { day:'2-digit', month:'short' }) + " " + time;
+}
+
+function fmtWhen(ts){
+  const d = new Date(ts);
+  const now = new Date();
+  const time = d.toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit' });
+  const sameDay = d.toDateString() === now.toDateString();
+  const tomorrow = new Date(now); tomorrow.setDate(now.getDate()+1);
+  if (sameDay) return time;
+  if (d.toDateString() === tomorrow.toDateString()) return "mañana " + time;
+  return d.toLocaleDateString('es-ES', { day:'2-digit', month:'short' }) + " " + time;
+}
+
+function renderFilters(){
+  const el = document.getElementById('filters');
+  el.innerHTML = "";
+  const all = document.createElement('div');
+  all.className = 'chip' + (activeFilter === 'todas' ? ' active' : '');
+  all.textContent = `Todas (${notes.length})`;
+  if (activeFilter === 'todas'){ all.style.background = 'var(--accent)'; all.style.color = 'var(--accent-ink)'; }
+  all.onclick = () => { activeFilter = 'todas'; renderAll(); };
+  el.appendChild(all);
+
+  CAT_ORDER.forEach(key => {
+    const cat = CATEGORIES[key];
+    const count = notes.filter(n => n.category === key).length;
+    const chip = document.createElement('div');
+    chip.className = 'chip' + (activeFilter === key ? ' active' : '');
+    chip.textContent = `${cat.emoji} ${cat.label} (${count})`;
+    if (activeFilter === key) chip.style.background = `var(${cat.varName})`;
+    chip.onclick = () => { activeFilter = key; renderAll(); };
+    el.appendChild(chip);
+  });
+}
+
+function renderCardAttachment(a){
+  if (!a) return '';
+  if (a.type === 'image') return `<img class="card-img" src="${a.dataUrl}" alt="">`;
+  if (a.type === 'document') return `<div class="card-doc">📄 ${escapeHtml(a.name)}</div>`;
+  if (a.type === 'link') return `<a class="card-link" href="${escapeHtml(a.url)}" target="_blank" rel="noopener">🔗 ${escapeHtml(a.url)}</a>`;
+  return '';
+}
+
+function renderGrid(){
+  const grid = document.getElementById('grid');
+  const main = document.getElementById('main');
+  let list = activeFilter === 'todas' ? notes : notes.filter(n => n.category === activeFilter);
+  if (searchQuery){
+    list = list.filter(n =>
+      normalize(n.text).includes(searchQuery) ||
+      normalize(CATEGORIES[n.category].label).includes(searchQuery)
+    );
+  }
+  list = list.slice().sort((a,b) => b.ts - a.ts);
+
+  if (list.length === 0){
+    grid.style.display = 'none';
+    let empty = main.querySelector('.empty');
+    if (!empty){
+      empty = document.createElement('div');
+      empty.className = 'empty';
+      main.appendChild(empty);
+    }
+    if (searchQuery){
+      empty.innerHTML = `<div class="big">🔍</div><p>Ninguna nota coincide con "${searchInput.value.trim()}".</p>`;
+    } else if (activeFilter !== 'todas'){
+      empty.innerHTML = `<div class="big">${CATEGORIES[activeFilter].emoji}</div><p>Todavía no hay notas en ${CATEGORIES[activeFilter].label.toLowerCase()}.</p>`;
+    } else {
+      empty.innerHTML = `<div class="big">🗒️</div><p>Todavía no hay notas aquí. Toca el micrófono y di algo.</p>`;
+    }
+    return;
+  }
+  const empty = main.querySelector('.empty');
+  if (empty) empty.remove();
+  grid.style.display = '';
+
+  grid.innerHTML = "";
+  list.forEach(n => {
+    const cat = CATEGORIES[n.category];
+    const isOverdue = n.category === 'recordatorio' && n.remindAt && n.remindAt < Date.now();
+    const whenPill = (n.category === 'recordatorio' && n.remindAt)
+      ? `<span class="when${isOverdue ? ' overdue' : ''}">⏰ ${fmtWhen(n.remindAt)}${n.alarmEnabled ? ' 🔔' : ''}</span>`
+      : '';
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.setProperty('--card-color', `var(${cat.varName})`);
+    card.innerHTML = `
+      <div class="row-top">
+        <div class="row-left">
+          <span class="badge">${cat.emoji} ${cat.label}</span>
+          ${whenPill}
+        </div>
+        <span class="actions">
+          <button class="icon-btn" data-act="edit" aria-label="Editar">✏️</button>
+          <button class="icon-btn" data-act="del" aria-label="Eliminar">🗑️</button>
+        </span>
+      </div>
+      ${renderCardAttachment(n.attachment)}
+      ${n.text ? `<div class="text"></div>` : ''}
+      <div class="meta">añadida ${fmtTime(n.ts)}</div>
+    `;
+    const textEl = card.querySelector('.text');
+    if (textEl) textEl.textContent = n.text;
+    card.querySelector('[data-act="del"]').onclick = (e) => {
+      e.stopPropagation();
+      notes = notes.filter(x => x.id !== n.id);
+      save(); renderAll();
+    };
+    card.querySelector('[data-act="edit"]').onclick = (e) => {
+      e.stopPropagation();
+      openSheet(n);
+    };
+    grid.appendChild(card);
+  });
+}
+
+// ---- Alarmas / notificaciones ----
+let alarmTimeouts = {};
+function clearAlarmTimeouts(){
+  Object.values(alarmTimeouts).forEach(id => clearTimeout(id));
+  alarmTimeouts = {};
+}
+function scheduleAlarms(){
+  clearAlarmTimeouts();
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const now = Date.now();
+  notes.forEach(n => {
+    if (n.category === 'recordatorio' && n.alarmEnabled && n.remindAt && !n.notified){
+      const delay = n.remindAt - now;
+      if (delay > 0 && delay < 7*24*60*60*1000){
+        alarmTimeouts[n.id] = setTimeout(() => {
+          try { new Notification('⏰ Recordatorio', { body: n.text, tag: n.id }); } catch(e){}
+          n.notified = true; save(); renderAll();
+        }, delay);
+      }
+    }
+  });
+}
+
+function renderAll(){ renderFilters(); renderGrid(); scheduleAlarms(); }
+
+// ---- Búsqueda ----
+const searchInput = document.getElementById('searchInput');
+const searchClear = document.getElementById('searchClear');
+searchInput.addEventListener('input', () => {
+  searchQuery = normalize(searchInput.value.trim());
+  searchClear.hidden = searchInput.value.length === 0;
+  renderGrid();
+});
+searchClear.onclick = () => {
+  searchInput.value = "";
+  searchQuery = "";
+  searchClear.hidden = true;
+  renderGrid();
+  searchInput.focus();
+};
+
+// ---- Sheet (crear/editar) ----
+const backdrop = document.getElementById('backdrop');
+const draftText = document.getElementById('draftText');
+const statusEl = document.getElementById('status');
+const catPicker = document.getElementById('catPicker');
+const reminderFields = document.getElementById('reminderFields');
+const draftTimeInput = document.getElementById('draftTime');
+const draftAlarmInput = document.getElementById('draftAlarm');
+
+function syncReminderFieldsVisibility(){
+  reminderFields.hidden = draftCategory !== 'recordatorio';
+}
+
+function renderCatPicker(){
+  catPicker.innerHTML = "";
+  CAT_ORDER.forEach(key => {
+    const cat = CATEGORIES[key];
+    const el = document.createElement('div');
+    el.className = 'cat-pick' + (draftCategory === key ? ' active' : '');
+    if (draftCategory === key) el.style.background = `var(${cat.varName})`;
+    el.textContent = `${cat.emoji} ${cat.label}`;
+    el.onclick = () => { draftCategory = key; renderCatPicker(); syncReminderFieldsVisibility(); updateSheetTitle(); maybeGuessTime(); };
+    catPicker.appendChild(el);
+  });
+}
+
+function updateSheetTitle(){
+  const cat = CATEGORIES[draftCategory];
+  document.getElementById('sheetTitle').textContent = cat.emoji + ' ' + (editingId ? cat.editTitle : cat.newTitle);
+}
+
+function maybeGuessTime(){
+  if (draftCategory === 'recordatorio' && !draftTimeTouched){
+    const guess = guessDateTime(draftText.value);
+    if (guess) draftTimeInput.value = toLocalInputValue(guess);
+  }
+}
+
+function renderAttachmentPreview(){
+  const box = document.getElementById('attachmentPreview');
+  if (!draftAttachment){ box.hidden = true; box.innerHTML = ''; return; }
+  box.hidden = false;
+  let inner = '';
+  if (draftAttachment.type === 'image'){
+    inner = `<img src="${draftAttachment.dataUrl}" alt="">`;
+  } else if (draftAttachment.type === 'document'){
+    inner = `<div class="attach-doc">📄 ${escapeHtml(draftAttachment.name)}</div>`;
+  } else if (draftAttachment.type === 'link'){
+    inner = `<div class="attach-link">🔗 ${escapeHtml(draftAttachment.url)}</div>`;
+  }
+  box.innerHTML = inner + `<button type="button" class="attach-remove" id="attachRemove" aria-label="Quitar adjunto">✕</button>`;
+  document.getElementById('attachRemove').onclick = () => { draftAttachment = null; renderAttachmentPreview(); };
+}
+
+function openSheet(existing, forcedCategory){
+  editingId = existing ? existing.id : null;
+  draftText.value = existing ? existing.text : "";
+  draftCategory = existing ? existing.category : (forcedCategory || "nota");
+  draftAttachment = existing ? (existing.attachment || null) : null;
+  draftTimeTouched = !!existing;
+  draftTimeInput.value = (existing && existing.remindAt) ? toLocalInputValue(new Date(existing.remindAt)) : "";
+  draftAlarmInput.checked = existing ? !!existing.alarmEnabled : false;
+  statusEl.textContent = existing ? "Puedes editar el texto o dictar para añadir más." : "Dicta o escribe el contenido.";
+  updateSheetTitle();
+  renderCatPicker();
+  syncReminderFieldsVisibility();
+  renderAttachmentPreview();
+  maybeGuessTime();
+  backdrop.classList.add('open');
+}
+function closeSheet(){
+  backdrop.classList.remove('open');
+  if (recognizing) stopRecognition();
+}
+
+// ---- Selector de tipo (chooser) ----
+const chooserBackdrop = document.getElementById('chooserBackdrop');
+function renderChooser(){
+  const grid = document.getElementById('chooserGrid');
+  grid.innerHTML = "";
+  CAT_ORDER.forEach(key => {
+    const cat = CATEGORIES[key];
+    const btn = document.createElement('button');
+    btn.className = 'chooser-item';
+    btn.style.setProperty('--card-color', `var(${cat.varName})`);
+    btn.innerHTML = `<span class="chooser-emoji">${cat.emoji}</span><span>${cat.label}</span>`;
+    btn.onclick = () => { closeChooser(); openSheet(null, key); };
+    grid.appendChild(btn);
+  });
+  const attachTile = document.createElement('button');
+  attachTile.className = 'chooser-item';
+  attachTile.style.setProperty('--card-color', 'var(--accent)');
+  attachTile.innerHTML = `<span class="chooser-emoji">📎</span><span>Adjuntar</span>`;
+  attachTile.onclick = () => { closeChooser(); openSheet(null, 'nota'); openAttachChooser(); };
+  grid.appendChild(attachTile);
+}
+function openChooser(){ renderChooser(); chooserBackdrop.classList.add('open'); }
+function closeChooser(){ chooserBackdrop.classList.remove('open'); }
+
+document.getElementById('btnAdd').onclick = openChooser;
+document.getElementById('btnChooserCancel').onclick = closeChooser;
+chooserBackdrop.addEventListener('click', (e) => { if (e.target === chooserBackdrop) closeChooser(); });
+
+// ---- Adjuntar (imagen, foto, documento, enlace) ----
+const attachBackdrop = document.getElementById('attachBackdrop');
+function openAttachChooser(){ attachBackdrop.classList.add('open'); }
+function closeAttachChooser(){ attachBackdrop.classList.remove('open'); }
+document.getElementById('btnAttach').onclick = openAttachChooser;
+document.getElementById('btnAttachCancel').onclick = closeAttachChooser;
+attachBackdrop.addEventListener('click', (e) => { if (e.target === attachBackdrop) closeAttachChooser(); });
+
+function handleFile(file, kind){
+  if (!file) return;
+  const MAX = 4 * 1024 * 1024;
+  if (file.size > MAX){
+    alert('El archivo es demasiado grande para guardarlo en el dispositivo (máx. 4 MB).');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    draftAttachment = { type: kind, name: file.name, mime: file.type, dataUrl: reader.result };
+    closeAttachChooser();
+    renderAttachmentPreview();
+  };
+  reader.readAsDataURL(file);
+}
+function addLinkAttachment(){
+  closeAttachChooser();
+  const url = prompt('Pega o escribe el enlace:');
+  if (!url) return;
+  let normalized = url.trim();
+  if (!/^https?:\/\//i.test(normalized)) normalized = 'https://' + normalized;
+  draftAttachment = { type: 'link', url: normalized };
+  renderAttachmentPreview();
+}
+
+document.getElementById('tileCamera').onclick = () => document.getElementById('fileCamera').click();
+document.getElementById('tileImage').onclick = () => document.getElementById('fileImage').click();
+document.getElementById('tileDoc').onclick = () => document.getElementById('fileDoc').click();
+document.getElementById('tileLink').onclick = addLinkAttachment;
+
+document.getElementById('fileCamera').addEventListener('change', e => { handleFile(e.target.files[0], 'image'); e.target.value=''; });
+document.getElementById('fileImage').addEventListener('change', e => { handleFile(e.target.files[0], 'image'); e.target.value=''; });
+document.getElementById('fileDoc').addEventListener('change', e => { handleFile(e.target.files[0], 'document'); e.target.value=''; });
+
+document.getElementById('btnCancel').onclick = closeSheet;
+document.getElementById('btnSave').onclick = () => {
+  const text = draftText.value.trim();
+  if (!text && !draftAttachment) { closeSheet(); return; }
+  const remindAt = (draftCategory === 'recordatorio' && draftTimeInput.value) ? new Date(draftTimeInput.value).getTime() : null;
+  const alarmEnabled = draftCategory === 'recordatorio' && !!remindAt && draftAlarmInput.checked;
+  if (editingId){
+    const n = notes.find(x => x.id === editingId);
+    n.text = text; n.category = draftCategory; n.remindAt = remindAt; n.alarmEnabled = alarmEnabled; n.notified = false; n.attachment = draftAttachment;
+  } else {
+    notes.push({ id: Date.now() + '-' + Math.random().toString(36).slice(2), text, category: draftCategory, ts: Date.now(), remindAt, alarmEnabled, notified: false, attachment: draftAttachment });
+  }
+  save();
+  closeSheet();
+  renderAll();
+};
+draftText.addEventListener('input', maybeGuessTime);
+draftTimeInput.addEventListener('input', () => { draftTimeTouched = true; });
+draftAlarmInput.addEventListener('change', async () => {
+  if (draftAlarmInput.checked){
+    if (!('Notification' in window)){
+      alert('Tu navegador no soporta notificaciones.');
+      draftAlarmInput.checked = false;
+      return;
+    }
+    if (Notification.permission !== 'granted'){
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') draftAlarmInput.checked = false;
+    }
+  }
+});
+
+// ---- Reconocimiento de voz ----
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+let recognizing = false;
+const btnMic = document.getElementById('btnMicInline');
+const micGlyph = document.getElementById('micGlyph');
+const micWave = document.getElementById('micWave');
+
+if (SpeechRecognition){
+  recognition = new SpeechRecognition();
+  recognition.lang = 'es-ES';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+
+  recognition.onresult = (e) => {
+    let finalText = draftText.dataset.base || "";
+    let interim = "";
+    for (let i = e.resultIndex; i < e.results.length; i++){
+      const chunk = e.results[i][0].transcript;
+      if (e.results[i].isFinal) finalText += chunk;
+      else interim += chunk;
+    }
+    draftText.dataset.base = finalText;
+    draftText.value = (finalText + interim).trim();
+    draftText.dispatchEvent(new Event('input'));
+  };
+  recognition.onend = () => {
+    recognizing = false;
+    btnMic.classList.remove('listening');
+    micGlyph.hidden = false; micWave.hidden = true;
+    statusEl.textContent = "Puedes editar el texto antes de guardar.";
+  };
+  recognition.onerror = (e) => {
+    recognizing = false;
+    btnMic.classList.remove('listening');
+    micGlyph.hidden = false; micWave.hidden = true;
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed'){
+      statusEl.textContent = "⚠️ Permiso de micrófono denegado. Revisa Ajustes > Safari.";
+    } else if (e.error === 'no-speech'){
+      statusEl.textContent = "No se detectó voz. Inténtalo de nuevo.";
+    } else {
+      statusEl.textContent = "Error de reconocimiento: " + e.error;
+    }
+  };
+} else {
+  btnMic.title = "Dictado no soportado en este navegador, usa el teclado";
+}
+
+function startRecognition(){
+  if (!recognition) { statusEl.textContent = "Tu navegador no soporta dictado. Escribe la nota."; return; }
+  draftText.dataset.base = draftText.value ? draftText.value + " " : "";
+  recognizing = true;
+  btnMic.classList.add('listening');
+  micGlyph.hidden = true; micWave.hidden = false;
+  statusEl.textContent = "🎙️ Escuchando…";
+  try { recognition.start(); } catch(err){ /* already started */ }
+}
+function stopRecognition(){
+  recognizing = false;
+  btnMic.classList.remove('listening');
+  micGlyph.hidden = false; micWave.hidden = true;
+  try { recognition && recognition.stop(); } catch(err){}
+}
+
+btnMic.onclick = () => {
+  if (recognizing) stopRecognition();
+  else startRecognition();
+};
+
+// ---- Service worker ----
+if ('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+  });
+}
+
+renderAll();
+</script>
+</body>
+</html>
