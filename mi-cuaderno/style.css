@@ -16,3 +16,5 @@ nav{width:calc(100% - 40px);max-width:420px;border-radius:22px;padding:5px;backg
 #note-form>.voice-controls{margin:0 0 12px;justify-content:center}#body{min-height:28dvh}dialog{max-height:92dvh;padding-top:14px}
 
 .dialog-head .editor-icon{display:flex;align-items:center;justify-content:center;width:44px;height:44px;padding:10px;border-radius:50%;color:#657580}.editor-icon svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.dialog-head .save.editor-icon{color:#47725f;background:#e0eee7}.dialog-head #cancel{background:#eef2f5}
+
+.dialog-head{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center}.dialog-head strong{text-align:center}.dialog-head .editor-icon{flex-shrink:0;min-width:44px;min-height:44px}.editor-icon span{display:block;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:30px;font-weight:400;line-height:1;color:inherit}
