@@ -226,16 +226,10 @@
   .sheet h2{ margin:0 0 4px; font-size:20px; font-weight:600; }
   .sheet .status{ color:var(--text-dim); font-size:13px; margin-bottom:14px; font-family:var(--font-mono); }
   .sheet textarea{
-    width:100%; min-height:90px; background:var(--surface-2); color:var(--text); border:1px solid var(--border);
+    width:100%; min-height:220px; background:var(--surface-2); color:var(--text); border:1px solid var(--border);
     border-radius:14px; padding:14px; font-size:15px; resize:vertical; font-family:var(--font-body);
   }
   .sheet textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
-  .cat-picker{ display:flex; gap:8px; margin:14px 0; flex-wrap:wrap; }
-  .cat-pick{
-    padding:7px 14px; border-radius:999px; font-size:13px; font-weight:600; cursor:pointer;
-    background:var(--surface-2); color:var(--text-dim); border:1.5px solid var(--border);
-  }
-  .cat-pick.active{ color:var(--cat-ink); border-color:transparent; }
 
   .reminder-fields{ margin-top:4px; padding-top:10px; border-top:1px dashed var(--border); }
   .field-label{ display:block; font-size:12px; font-weight:600; color:var(--text-dim); text-transform:uppercase; letter-spacing:.4px; margin-bottom:6px; }
@@ -304,7 +298,6 @@
     <div class="status" id="status">Toca el micrófono y habla…</div>
     <textarea id="draftText" placeholder="Escribe o dicta aquí tu nota…"></textarea>
     <div class="attachment-preview" id="attachmentPreview" hidden></div>
-    <div class="cat-picker" id="catPicker"></div>
 
     <div class="reminder-fields" id="reminderFields" hidden>
       <span class="field-label">¿Cuándo?</span>
@@ -593,26 +586,12 @@ searchClear.onclick = () => {
 const backdrop = document.getElementById('backdrop');
 const draftText = document.getElementById('draftText');
 const statusEl = document.getElementById('status');
-const catPicker = document.getElementById('catPicker');
 const reminderFields = document.getElementById('reminderFields');
 const draftTimeInput = document.getElementById('draftTime');
 const draftAlarmInput = document.getElementById('draftAlarm');
 
 function syncReminderFieldsVisibility(){
   reminderFields.hidden = draftCategory !== 'recordatorio';
-}
-
-function renderCatPicker(){
-  catPicker.innerHTML = "";
-  CAT_ORDER.forEach(key => {
-    const cat = CATEGORIES[key];
-    const el = document.createElement('div');
-    el.className = 'cat-pick' + (draftCategory === key ? ' active' : '');
-    if (draftCategory === key) el.style.background = `var(${cat.varName})`;
-    el.textContent = `${cat.emoji} ${cat.label}`;
-    el.onclick = () => { draftCategory = key; renderCatPicker(); syncReminderFieldsVisibility(); updateSheetTitle(); maybeGuessTime(); };
-    catPicker.appendChild(el);
-  });
 }
 
 function updateSheetTitle(){
@@ -653,7 +632,6 @@ function openSheet(existing, forcedCategory){
   draftAlarmInput.checked = existing ? !!existing.alarmEnabled : false;
   statusEl.textContent = existing ? "Puedes editar el texto o dictar para añadir más." : "Dicta o escribe el contenido.";
   updateSheetTitle();
-  renderCatPicker();
   syncReminderFieldsVisibility();
   renderAttachmentPreview();
   maybeGuessTime();
