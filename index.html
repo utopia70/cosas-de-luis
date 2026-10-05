@@ -352,33 +352,56 @@ const CATEGORIES = {
 };
 const CAT_ORDER = ["recordatorio","tarea","idea","nota"];
 
+const MONTH_NAMES = { enero:0, febrero:1, marzo:2, abril:3, mayo:4, junio:5, julio:6, agosto:7, septiembre:8, setiembre:8, octubre:9, noviembre:10, diciembre:11 };
+const WEEKDAY_NAMES = { "domingo":0, "lunes":1, "martes":2, "miércoles":3, "miercoles":3, "jueves":4, "viernes":5, "sábado":6, "sabado":6 };
+
 function guessDateTime(text){
   const t = text.toLowerCase();
   const now = new Date();
   const d = new Date(now);
   let hasDay = false;
 
-  if (/\bmañana\b/.test(t)){ d.setDate(d.getDate()+1); hasDay = true; }
-
-  const weekdayIdx = { "domingo":0, "lunes":1, "martes":2, "miércoles":3, "miercoles":3, "jueves":4, "viernes":5, "sábado":6, "sabado":6 };
-  for (const name in weekdayIdx){
-    if (t.includes(name)){
-      const target = weekdayIdx[name];
-      let diff = (target - d.getDay() + 7) % 7;
-      if (diff === 0) diff = 7;
-      d.setDate(d.getDate() + diff);
-      hasDay = true;
-      break;
+  // Fecha completa dicha por voz: "el 15 de noviembre", "15 de noviembre de 2026"
+  const monthNamesRx = Object.keys(MONTH_NAMES).join('|');
+  const dateMatch = t.match(new RegExp('\\b(\\d{1,2})\\s+de\\s+(' + monthNamesRx + ')(?:\\s+de\\s+(\\d{4}))?\\b'));
+  if (dateMatch){
+    const day = parseInt(dateMatch[1], 10);
+    const month = MONTH_NAMES[dateMatch[2]];
+    let year = dateMatch[3] ? parseInt(dateMatch[3], 10) : now.getFullYear();
+    if (!dateMatch[3]){
+      const candidate = new Date(year, month, day);
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      if (candidate < today) year += 1;
+    }
+    d.setFullYear(year, month, day);
+    hasDay = true;
+  } else if (/\bmañana\b/.test(t)){
+    d.setDate(d.getDate() + 1);
+    hasDay = true;
+  } else {
+    for (const name in WEEKDAY_NAMES){
+      if (t.includes(name)){
+        const target = WEEKDAY_NAMES[name];
+        let diff = (target - d.getDay() + 7) % 7;
+        if (diff === 0) diff = 7;
+        d.setDate(d.getDate() + diff);
+        hasDay = true;
+        break;
+      }
     }
   }
 
-  const hourMatch = t.match(/a las (\d{1,2})(?::(\d{2}))?/);
+  // Hora dicha por voz: "a las 18:00", "a las 9 y media", "a las 6 de la tarde"
+  const hourMatch = t.match(/a las (\d{1,2})(?::(\d{2}))?(\s+y\s+media)?/);
   if (hourMatch){
-    d.setHours(parseInt(hourMatch[1],10), hourMatch[2] ? parseInt(hourMatch[2],10) : 0, 0, 0);
+    let hour = parseInt(hourMatch[1], 10);
+    let minute = hourMatch[2] ? parseInt(hourMatch[2], 10) : (hourMatch[3] ? 30 : 0);
+    if (hour < 12 && /\b(tarde|noche)\b/.test(t)) hour += 12;
+    d.setHours(hour, minute, 0, 0);
     return d;
   }
   if (hasDay){
-    d.setHours(9,0,0,0);
+    d.setHours(9, 0, 0, 0);
     return d;
   }
   return null;
@@ -411,15 +434,6 @@ const normalize = s => s.toLowerCase().normalize('NFD').replace(DIACRITICS_RX, '
 const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(notes)); }
-
-function fmtTime(ts){
-  const d = new Date(ts);
-  const now = new Date();
-  const sameDay = d.toDateString() === now.toDateString();
-  const time = d.toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit' });
-  if (sameDay) return "hoy " + time;
-  return d.toLocaleDateString('es-ES', { day:'2-digit', month:'short' }) + " " + time;
-}
 
 function fmtWhen(ts){
   const d = new Date(ts);
@@ -518,7 +532,6 @@ function renderGrid(){
       </div>
       ${renderCardAttachment(n.attachment)}
       ${n.text ? `<div class="text"></div>` : ''}
-      <div class="meta">añadida ${fmtTime(n.ts)}</div>
     `;
     const textEl = card.querySelector('.text');
     if (textEl) textEl.textContent = n.text;
