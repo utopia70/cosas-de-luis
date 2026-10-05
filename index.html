@@ -825,6 +825,7 @@ if (SpeechRecognition){
 function startRecognition(){
   if (!recognition) { statusEl.textContent = "Tu navegador no soporta dictado. Escribe la nota."; return; }
   draftText.dataset.base = draftText.value ? draftText.value + " " : "";
+  draftTimeTouched = false;
   recognizing = true;
   btnMic.classList.add('listening');
   micGlyph.hidden = true; micWave.hidden = false;
